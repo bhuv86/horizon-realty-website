@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Horizon Realty &mdash; Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  :root{ --navy:#12233B; --paper:#F7F5F0; --brass:#B98A3D; --slate:#5B6B7C; --ink:#1A1F26; --line:rgba(18,35,59,0.12); }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif; }
+  header{ background:var(--navy); color:#fff; padding:18px 5vw; display:flex; justify-content:space-between; align-items:center; }
+  header h1{ font-size:1.1rem; }
+  main{ padding:4vw 5vw; max-width:1000px; margin:0 auto; }
+  .card{ background:#fff; border:1px solid var(--line); border-radius:6px; padding:26px; margin-bottom:24px; }
+  .card h2{ font-size:1.1rem; margin-bottom:14px; color:var(--navy); }
+  label{ display:block; font-size:0.85rem; margin-bottom:6px; color:var(--slate); }
+  input, select{ width:100%; padding:10px; border:1px solid var(--line); border-radius:4px; margin-bottom:14px; font-size:0.9rem; }
+  button{ background:var(--navy); color:#fff; border:none; padding:11px 18px; border-radius:4px; cursor:pointer; font-size:0.9rem; }
+  button:hover{ background:#1B3454; }
+  table{ width:100%; border-collapse:collapse; margin-top:14px; font-size:0.85rem; }
+  th,td{ text-align:left; padding:8px; border-bottom:1px solid var(--line); }
+  #loginScreen{ max-width:380px; margin:10vh auto; }
+  #appScreen{ display:none; }
+  .hint{ font-size:0.8rem; color:var(--slate); margin-top:-8px; margin-bottom:14px; }
+  .status-msg{ padding:10px; border-radius:4px; margin-bottom:14px; font-size:0.85rem; display:none; }
+  .status-ok{ background:#E4F0E6; color:#2F6B3F; }
+  .status-err{ background:#F5E3DE; color:#A5432C; }
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="card">
+  <h2>Admin login</h2>
+  <label>Email</label>
+  <input type="email" id="loginEmail">
+  <label>Password</label>
+  <input type="password" id="loginPassword">
+  <button onclick="login()">Log in</button>
+  <div id="loginMsg" class="status-msg status-err"></div>
+</div>
+
+<div id="appScreen">
+  <header>
+    <h1>Horizon Realty — Admin</h1>
+    <button onclick="logout()" style="background:transparent; border:1px solid rgba(255,255,255,0.3);">Log out</button>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>1. Add a project</h2>
+      <label>Project name</label>
+      <input type="text" id="pName" placeholder="Green Valley Phase 2">
+      <label>Location</label>
+      <input type="text" id="pLocation" placeholder="Sriperumbudur, Chennai">
+      <label>Description</label>
+      <input type="text" id="pDesc" placeholder="Short one-line description">
+      <button onclick="addProject()">Add project</button>
+      <div id="projMsg" class="status-msg"></div>
+    </div>
+
+    <div class="card">
+      <h2>2. Bulk upload plots (CSV)</h2>
+      <label>Which project are these plots for?</label>
+      <select id="csvProject"></select>
+      <label>CSV file</label>
+      <p class="hint">Columns required: plot_no, location, size_sqft, price, facing, status (available/booked/sold)</p>
+      <input type="file" id="csvFile" accept=".csv">
+      <button onclick="uploadCSV()">Upload plots</button>
+      <div id="csvMsg" class="status-msg"></div>
+    </div>
+
+    <div class="card">
+      <h2>3. Site-visit requests</h2>
+      <table id="visitsTable">
+        <thead><tr><th>Name</th><th>Phone</th><th>Project</th><th>Notes</th><th>Received</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://jpbujomdlyoqjeledjlm.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_WeDPtZdr52Xfmp9oN6bZ4Q_44rGrV0Q";
+  const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  async function checkSession(){
+    const { data } = await supa.auth.getSession();
+    if (data.session){ showApp(); } else { showLogin(); }
+  }
+
+  function showLogin(){ document.getElementById('loginScreen').style.display='block'; document.getElementById('appScreen').style.display='none'; }
+  function showApp(){ document.getElementById('loginScreen').style.display='none'; document.getElementById('appScreen').style.display='block'; loadProjects(); loadVisits(); }
+
+  async function login(){
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const { error } = await supa.auth.signInWithPassword({ email, password });
+    const msg = document.getElementById('loginMsg');
+    if (error){ msg.style.display='block'; msg.textContent = error.message; }
+    else { showApp(); }
+  }
+  async function logout(){ await supa.auth.signOut(); showLogin(); }
+
+  async function loadProjects(){
+    const { data } = await supa.from('projects').select('*').order('created_at');
+    const sel = document.getElementById('csvProject');
+    sel.innerHTML = (data||[]).map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  }
+
+  async function addProject(){
+    const payload = {
+      name: document.getElementById('pName').value,
+      location: document.getElementById('pLocation').value,
+      description: document.getElementById('pDesc').value
+    };
+    const { error } = await supa.from('projects').insert(payload);
+    const msg = document.getElementById('projMsg');
+    msg.style.display = 'block';
+    if (error){ msg.className='status-msg status-err'; msg.textContent = error.message; }
+    else { msg.className='status-msg status-ok'; msg.textContent = 'Project added.'; loadProjects(); }
+  }
+
+  function uploadCSV(){
+    const file = document.getElementById('csvFile').files[0];
+    const projectId = document.getElementById('csvProject').value;
+    const msg = document.getElementById('csvMsg');
+    if (!file || !projectId){ msg.style.display='block'; msg.className='status-msg status-err'; msg.textContent='Choose a project and CSV file first.'; return; }
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        const rows = results.data.map(r => ({
+          project_id: projectId,
+          plot_no: r.plot_no,
+          location: r.location,
+          size_sqft: r.size_sqft ? Number(r.size_sqft) : null,
+          price: r.price ? Number(r.price) : null,
+          facing: r.facing,
+          status: r.status || 'available'
+        }));
+        const { error } = await supa.from('plots').insert(rows);
+        msg.style.display = 'block';
+        if (error){ msg.className='status-msg status-err'; msg.textContent = error.message; }
+        else { msg.className='status-msg status-ok'; msg.textContent = `${rows.length} plots uploaded successfully.`; }
+      }
+    });
+  }
+
+  async function loadVisits(){
+    const { data } = await supa.from('site_visits').select('*, projects(name)').order('created_at', { ascending:false });
+    const body = document.querySelector('#visitsTable tbody');
+    body.innerHTML = (data||[]).map(v => `
+      <tr>
+        <td>${v.name}</td><td>${v.phone}</td>
+        <td>${v.projects ? v.projects.name : 'Any'}</td>
+        <td>${v.notes || ''}</td>
+        <td>${new Date(v.created_at).toLocaleDateString()}</td>
+      </tr>`).join('');
+  }
+
+  checkSession();
+</script>
+
+</body>
+</html>

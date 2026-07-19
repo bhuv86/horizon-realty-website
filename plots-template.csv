@@ -1,0 +1,4 @@
+plot_no,location,size_sqft,price,facing,status
+A-101,Sriperumbudur,1200,1800000,East,available
+A-102,Sriperumbudur,1500,2250000,North,available
+A-103,Sriperumbudur,1200,1800000,West,booked

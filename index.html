@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Horizon Realty &mdash; Live Projects &amp; Plots</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --navy:#12233B; --paper:#F7F5F0; --brass:#B98A3D;
+    --slate:#5B6B7C; --ink:#1A1F26; --line:rgba(18,35,59,0.12);
+    --green:#2F6B3F; --red:#A5432C; --amber:#B98A3D;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.55; }
+  h1,h2,h3{ font-family:'Fraunces',serif; font-weight:600; letter-spacing:-0.01em; color:var(--navy); }
+  .label{ font-family:'IBM Plex Mono',monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--brass); }
+  header{ display:flex; justify-content:space-between; align-items:center; padding:24px 6vw; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--paper); z-index:10; }
+  .logo{ font-family:'Fraunces',serif; font-size:1.2rem; font-weight:600; }
+  nav a{ color:var(--slate); text-decoration:none; margin-left:26px; font-size:0.92rem; }
+  nav a:hover{ color:var(--navy); }
+
+  .hero{ padding:6vw 6vw 3vw; max-width:60ch; }
+  .hero h1{ font-size:clamp(2rem,3.6vw,3rem); margin:12px 0; }
+  .hero p{ color:var(--slate); }
+
+  section{ padding:3vw 6vw; }
+  .section-head{ margin-bottom:24px; }
+  .section-head h2{ font-size:1.6rem; margin-top:6px; }
+
+  .projects-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:22px; }
+  .project-card{ background:#fff; border:1px solid var(--line); border-radius:4px; padding:22px; cursor:pointer; transition:box-shadow .2s; }
+  .project-card:hover{ box-shadow:0 10px 24px rgba(18,35,59,0.1); }
+  .project-card h3{ font-size:1.15rem; margin:6px 0 4px; }
+  .project-card .loc{ color:var(--slate); font-size:0.88rem; margin-bottom:10px; }
+  .project-card .count{ font-family:'IBM Plex Mono',monospace; font-size:0.78rem; color:var(--brass); }
+
+  .filters{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:22px; }
+  .filters select, .filters input{ padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-family:'Inter',sans-serif; font-size:0.9rem; background:#fff; }
+
+  table.plots{ width:100%; border-collapse:collapse; background:#fff; }
+  table.plots th{ text-align:left; font-family:'IBM Plex Mono',monospace; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--slate); padding:12px; border-bottom:2px solid var(--line); }
+  table.plots td{ padding:12px; border-bottom:1px solid var(--line); font-size:0.92rem; }
+  .status-pill{ display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.76rem; font-weight:600; }
+  .status-available{ background:#E4F0E6; color:var(--green); }
+  .status-booked{ background:#FCEFE0; color:var(--amber); }
+  .status-sold{ background:#F5E3DE; color:var(--red); }
+  .enquire-btn{ background:var(--navy); color:#fff; border:none; padding:7px 14px; border-radius:3px; font-size:0.82rem; cursor:pointer; }
+  .enquire-btn:hover{ background:#1B3454; }
+
+  .dossier{ background:var(--navy); color:var(--paper); border-radius:2px; padding:32px; max-width:520px; position:relative; }
+  .dossier::before{ content:""; position:absolute; top:0; left:0; right:0; height:6px; background:var(--brass); }
+  .dossier h2{ color:#fff; font-size:1.3rem; margin:8px 0 20px; }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:0.78rem; color:#C7D0DA; margin-bottom:5px; }
+  .field input, .field textarea{ width:100%; background:rgba(247,245,240,0.06); border:1px solid rgba(247,245,240,0.25); border-radius:2px; padding:10px 12px; color:#fff; font-family:'Inter',sans-serif; font-size:0.92rem; }
+  .field textarea{ min-height:80px; resize:vertical; }
+  .submit-btn{ width:100%; background:var(--brass); color:var(--navy); border:none; font-family:'IBM Plex Mono',monospace; font-size:0.8rem; letter-spacing:0.06em; text-transform:uppercase; padding:13px; border-radius:2px; cursor:pointer; font-weight:600; margin-top:4px; }
+  .submit-btn:hover{ background:#CBA05A; }
+  #formMsg{ display:none; background:#284A2F; color:#fff; padding:12px; border-radius:2px; margin-bottom:14px; font-size:0.88rem; }
+
+  .two-col{ display:grid; grid-template-columns:1.3fr 0.7fr; gap:40px; align-items:start; }
+  @media (max-width:860px){ .two-col{ grid-template-columns:1fr; } header{flex-direction:column; gap:12px;} nav a{margin:0 10px;} }
+
+  #configNotice{ background:#FCEFE0; border:1px solid var(--brass); color:#6b4a12; padding:14px 6vw; font-size:0.88rem; }
+</style>
+</head>
+<body>
+
+<div id="configNotice">
+  ⚠️ Connect your Supabase project: edit the <code>SUPABASE_URL</code> and <code>SUPABASE_KEY</code> values near the bottom of this file's script, then this notice disappears.
+</div>
+
+<header>
+  <div class="logo">Horizon Realty</div>
+  <nav>
+    <a href="#projects">Projects</a>
+    <a href="#plots">Available Plots</a>
+    <a href="#visit">Book a Visit</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <span class="label">7 live projects</span>
+  <h1>Find your plot, in real time.</h1>
+  <p>Every listing below updates the moment our team confirms availability &mdash; no outdated PDFs, no waiting on a callback.</p>
+</div>
+
+<section id="projects">
+  <div class="section-head">
+    <span class="label">Our developments</span>
+    <h2>Live projects</h2>
+  </div>
+  <div class="projects-grid" id="projectsGrid">
+    <p style="color:var(--slate)">Loading projects…</p>
+  </div>
+</section>
+
+<section id="plots">
+  <div class="two-col">
+    <div>
+      <div class="section-head">
+        <span class="label">Search inventory</span>
+        <h2>Available plots</h2>
+      </div>
+      <div class="filters">
+        <select id="filterProject"><option value="">All projects</option></select>
+        <select id="filterStatus">
+          <option value="">All statuses</option>
+          <option value="available">Available</option>
+          <option value="booked">Booked</option>
+          <option value="sold">Sold</option>
+        </select>
+        <input type="text" id="filterLocation" placeholder="Search location…">
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="plots">
+          <thead>
+            <tr><th>Plot No.</th><th>Project</th><th>Location</th><th>Size (sqft)</th><th>Price</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody id="plotsBody">
+            <tr><td colspan="7" style="color:var(--slate)">Loading plots…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="visit" class="dossier">
+      <span class="label">Enquiry / Site Visit</span>
+      <h2>Request a callback or visit</h2>
+      <div id="formMsg">Thanks — we've received your request and will call you shortly.</div>
+      <form id="enquiryForm">
+        <div class="field"><label>Full name</label><input type="text" id="name" required></div>
+        <div class="field"><label>Phone</label><input type="tel" id="phone" required></div>
+        <div class="field"><label>Email</label><input type="email" id="email"></div>
+        <div class="field"><label>Interested project</label>
+          <select id="projectSelect" style="width:100%; padding:10px 12px; border-radius:2px; background:rgba(247,245,240,0.06); border:1px solid rgba(247,245,240,0.25); color:#fff;">
+            <option value="">Any project</option>
+          </select>
+        </div>
+        <div class="field"><label>Message (optional)</label><textarea id="message" placeholder="Which plot, preferred date, questions..."></textarea></div>
+        <button type="submit" class="submit-btn">Send request</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+  // ---- 1. CONNECT YOUR SUPABASE PROJECT HERE ----
+  const SUPABASE_URL = "https://jpbujomdlyoqjeledjlm.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_WeDPtZdr52Xfmp9oN6bZ4Q_44rGrV0Q";
+  // ------------------------------------------------
+
+  const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  if (SUPABASE_URL.includes("YOUR-PROJECT")) {
+    document.getElementById("configNotice").style.display = "block";
+  } else {
+    document.getElementById("configNotice").style.display = "none";
+  }
+
+  let allProjects = [];
+  let allPlots = [];
+
+  async function loadData(){
+    const { data: projects } = await supa.from('projects').select('*').order('created_at');
+    const { data: plots } = await supa.from('plots').select('*, projects(name)').order('created_at', { ascending:false });
+    allProjects = projects || [];
+    allPlots = plots || [];
+    renderProjects();
+    populateFilters();
+    renderPlots();
+  }
+
+  function renderProjects(){
+    const grid = document.getElementById('projectsGrid');
+    if (!allProjects.length){ grid.innerHTML = '<p style="color:var(--slate)">No projects added yet.</p>'; return; }
+    grid.innerHTML = allProjects.map(p => {
+      const count = allPlots.filter(pl => pl.project_id === p.id && pl.status === 'available').length;
+      return `<div class="project-card">
+        <span class="label">${p.location}</span>
+        <h3>${p.name}</h3>
+        <div class="loc">${p.description || ''}</div>
+        <div class="count">${count} plots available</div>
+      </div>`;
+    }).join('');
+  }
+
+  function populateFilters(){
+    const sel = document.getElementById('filterProject');
+    const psel = document.getElementById('projectSelect');
+    allProjects.forEach(p => {
+      sel.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+      psel.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+    });
+  }
+
+  function renderPlots(){
+    const body = document.getElementById('plotsBody');
+    const projFilter = document.getElementById('filterProject').value;
+    const statusFilter = document.getElementById('filterStatus').value;
+    const locFilter = document.getElementById('filterLocation').value.toLowerCase();
+
+    let rows = allPlots.filter(pl =>
+      (!projFilter || pl.project_id === projFilter) &&
+      (!statusFilter || pl.status === statusFilter) &&
+      (!locFilter || (pl.location || '').toLowerCase().includes(locFilter))
+    );
+
+    if (!rows.length){ body.innerHTML = '<tr><td colspan="7" style="color:var(--slate)">No plots match your search.</td></tr>'; return; }
+
+    body.innerHTML = rows.map(pl => `
+      <tr>
+        <td>${pl.plot_no}</td>
+        <td>${pl.projects ? pl.projects.name : ''}</td>
+        <td>${pl.location || '—'}</td>
+        <td>${pl.size_sqft || '—'}</td>
+        <td>${pl.price ? '₹' + Number(pl.price).toLocaleString('en-IN') : '—'}</td>
+        <td><span class="status-pill status-${pl.status}">${pl.status}</span></td>
+        <td>${pl.status === 'available' ? `<button class="enquire-btn" onclick="enquireAbout('${pl.id}','${pl.plot_no}')">Enquire</button>` : ''}</td>
+      </tr>
+    `).join('');
+  }
+
+  function enquireAbout(plotId, plotNo){
+    document.getElementById('message').value = `I'm interested in Plot ${plotNo}.`;
+    document.getElementById('visit').scrollIntoView({behavior:'smooth'});
+  }
+
+  document.getElementById('filterProject').addEventListener('change', renderPlots);
+  document.getElementById('filterStatus').addEventListener('change', renderPlots);
+  document.getElementById('filterLocation').addEventListener('input', renderPlots);
+
+  document.getElementById('enquiryForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+      name: document.getElementById('name').value,
+      phone: document.getElementById('phone').value,
+      email: document.getElementById('email').value,
+      project_id: document.getElementById('projectSelect').value || null,
+      notes: document.getElementById('message').value
+    };
+    const { error } = await supa.from('site_visits').insert(payload);
+    if (!error){
+      document.getElementById('formMsg').style.display = 'block';
+      e.target.reset();
+    } else {
+      alert('Something went wrong — please call us directly.');
+    }
+  });
+
+  // Real-time: refresh instantly whenever plots or projects change
+  supa.channel('public-changes')
+    .on('postgres_changes', { event:'*', schema:'public', table:'plots' }, loadData)
+    .on('postgres_changes', { event:'*', schema:'public', table:'projects' }, loadData)
+    .subscribe();
+
+  loadData();
+</script>
+
+</body>
+</html>
