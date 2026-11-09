@@ -4,62 +4,149 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Diamond Realty AI — Control Centre</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{color-scheme:dark;--bg:#0b1220;--panel:#121d30;--line:#263650;--text:#edf3fb;--muted:#9aabc2;--gold:#d5a653;--green:#55c58a;--blue:#8db9ff}
+:root{color-scheme:dark;--bg:#0b1220;--panel:#121d30;--line:#263650;--text:#edf3fb;--muted:#9aabc2;--gold:#d5a653;--green:#55c58a;--red:#ff8b8b}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 Inter,system-ui,Arial,sans-serif}
-header{padding:22px clamp(18px,5vw,64px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px}
-.brand{font-weight:750;letter-spacing:.02em}.brand span{color:var(--gold)}main{max-width:1100px;margin:0 auto;padding:34px 20px 70px}
+header{padding:20px clamp(18px,5vw,64px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{font-weight:750;letter-spacing:.02em}.brand span{color:var(--gold)}main{max-width:1050px;margin:0 auto;padding:34px 20px 70px}
 .eyebrow{color:var(--gold);font-size:.76rem;text-transform:uppercase;letter-spacing:.15em;font-weight:700}
-h1{font-size:clamp(2rem,5vw,3.4rem);line-height:1.08;margin:10px 0}p{color:var(--muted)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:26px 0}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px}
-.card h2{font-size:1.05rem;margin:0 0 8px}.tag{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:4px 10px;color:var(--muted);font-size:.76rem}
-.status{display:flex;align-items:center;gap:8px;color:#f4c979;font-size:.85rem}.dot{width:8px;height:8px;border-radius:50%;background:var(--gold)}
-.chat{margin-top:24px}.chatbox{background:#0d1728;border:1px dashed #43536c;border-radius:12px;padding:18px}
+h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.08;margin:10px 0}p{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:24px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:19px}
+.card h2{font-size:1.03rem;margin:0 0 8px}.tag{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:4px 10px;color:var(--muted);font-size:.76rem}
+.notice{border-left:3px solid var(--gold);padding:12px 15px;background:#1b2637;border-radius:7px;color:#dce5f1;margin:18px 0}
+label{display:block;color:var(--muted);font-size:.86rem;margin:12px 0 6px}
 input,textarea{width:100%;background:#0a1322;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:12px;font:inherit}
-textarea{min-height:92px;resize:vertical}button{margin-top:10px;background:#34435a;color:#aab8cb;border:0;border-radius:9px;padding:11px 16px;font:inherit;cursor:not-allowed}
-ul{padding-left:20px;color:var(--muted)}li{margin:7px 0}.notice{border-left:3px solid var(--gold);padding:12px 15px;background:#1b2637;border-radius:7px;color:#dce5f1}
-footer{border-top:1px solid var(--line);padding:18px;text-align:center;color:var(--muted);font-size:.8rem}
-a{color:var(--blue)}
+textarea{min-height:100px;resize:vertical}
+button{background:#b98a3d;color:#101827;border:0;border-radius:9px;padding:11px 16px;font:inherit;font-weight:700;cursor:pointer}
+button.secondary{background:#263650;color:var(--text);border:1px solid #3b4e6a}
+button:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row button{margin-top:12px}
+#chatCard,#signedIn{display:none}.message{padding:11px 13px;border-radius:10px;margin:10px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.user{background:#1c3552}.assistant{background:#172b27;border:1px solid #315544}.error{background:#3a2026;color:#ffd8dc}
+#messages{max-height:430px;overflow:auto;margin:14px 0}
+ul{padding-left:20px;color:var(--muted)}li{margin:6px 0}footer{border-top:1px solid var(--line);padding:18px;text-align:center;color:var(--muted);font-size:.8rem}
 @media(max-width:600px){header{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body>
-<header><div class="brand">DIAMOND <span>REALTY</span> · AI</div><span class="tag">Owner control centre · Preview</span></header>
+<header><div class="brand">DIAMOND <span>REALTY</span> · AI</div><div class="row"><span class="tag">Owner control centre</span><button id="logoutBtn" class="secondary" hidden type="button">Log out</button></div></header>
 <main>
 <div class="eyebrow">Your business, one assistant</div>
-<h1>Vanakkam! Your AI control centre starts here.</h1>
-<p>Chat and voice assistant foundation for managing your real-estate website, projects, plots, enquiries and technical maintenance.</p>
-<div class="notice"><strong>Backend not connected yet.</strong> This is the safe dashboard preview. No real AI requests, code changes, customer calls or deployments are being made from this page yet.</div>
+<h1>Vanakkam! Diamond Realty AI.</h1>
+<p>Private owner assistant for Horizon Realty website development and Diamond Realty operations. Chat supports Tanglish and English.</p>
+<div class="notice"><strong>Development preview only.</strong> This page is on the development branch. The backend function and owner-only database migration have not been deployed or applied to production.</div>
 <div class="grid">
-<section class="card"><div class="status"><span class="dot"></span> Awaiting secure backend</div><h2>AI assistant</h2><p>Will understand Tanglish and English, plan tasks and explain fixes before asking your approval.</p></section>
-<section class="card"><span class="tag">Phase 1</span><h2>Website health</h2><p>Planned: availability checks, browser errors, failed form submissions and uptime alerts.</p></section>
-<section class="card"><span class="tag">Phase 2</span><h2>GitHub developer</h2><p>Planned: inspect code, prepare changes on a development branch, run tests and show a review.</p></section>
-<section class="card"><span class="tag">Phase 3</span><h2>Business operations</h2><p>Planned: project and plot management, lead follow-up, site visits and staff access.</p></section>
-<section class="card"><span class="tag">Phase 4</span><h2>Voice control</h2><p>Planned: Tanglish voice interaction through a connected voice or telephony provider.</p></section>
-<section class="card"><span class="tag">Always owner-controlled</span><h2>Approval & recovery</h2><p>Production changes, database migrations, customer contact and destructive actions require your approval.</p></section>
+<section class="card"><span class="tag">Read-only first release</span><h2>AI assistant</h2><p>Ask questions, plan work and get technical explanations. No automatic database edits, GitHub writes, calls or deployments.</p></section>
+<section class="card"><span class="tag">Owner approval</span><h2>Safe changes</h2><p>Future changes must show scope, risks, test results and rollback steps before approval.</p></section>
+<section class="card"><span class="tag">Next phases</span><h2>Business + voice</h2><p>CRM, plots, site visits, staff access and Tanglish voice calling are not enabled yet.</p></section>
 </div>
-<section class="card chat">
-<h2>Talk to your AI agent</h2>
-<p>The secure AI backend endpoint and owner authentication must be configured before enabling chat. Never place AI provider keys or GitHub tokens in this static website.</p>
-<div class="chatbox">
-<label for="message">Your command (Tanglish / English)</label>
-<textarea id="message" disabled placeholder="Example: Macha, enquiry form error check pannu..."></textarea>
-<button type="button" disabled>Chat will activate after secure backend setup</button>
-</div>
+<section class="card" id="loginCard">
+<h2>Owner sign in</h2>
+<p>Sign in with the owner account already registered in this Supabase project.</p>
+<label for="email">Email</label><input id="email" type="email" autocomplete="username" placeholder="Owner email">
+<label for="password">Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Supabase Auth password">
+<div class="row"><button id="loginBtn" type="button">Sign in</button><span id="loginStatus" aria-live="polite"></span></div>
+</section>
+<section class="card" id="chatCard">
+<div class="row" style="justify-content:space-between"><h2>Talk to your AI agent</h2><span class="tag" id="sessionLabel">Signed in</span></div>
+<div id="messages" aria-live="polite"></div>
+<label for="message">Your message (Tanglish / English)</label>
+<textarea id="message" maxlength="4000" placeholder="Macha, website-la irukkura error check panna enna steps?"></textarea>
+<div class="row"><button id="sendBtn" type="button">Send message</button><span id="chatStatus" aria-live="polite"></span></div>
 </section>
 <section class="card">
 <h2>Development safety</h2>
 <ul>
-<li>Development work stays separate from the live main branch.</li>
-<li>AI proposes changes and test evidence before asking for approval.</li>
-<li>Keep production secrets on the server, never in browser code or GitHub commits.</li>
-<li>Backups and rollback steps are required before production releases.</li>
+<li>Code changes stay on <code>ai-agent-foundation</code> until reviewed.</li>
+<li>Production database migrations and deployments require separate approval.</li>
+<li>AI provider keys and GitHub tokens must stay on secure servers, never in this page.</li>
+<li>Do not share passwords, OTPs, service-role keys or API secrets in chat.</li>
 </ul>
-<p>Current development branch: <code>ai-agent-foundation</code></p>
-<p><a href="https://github.com/bhuv86/horizon-realty-website/tree/ai-agent-foundation">Review the development branch on GitHub</a></p>
+<p><a href="https://github.com/bhuv86/horizon-realty-website/tree/ai-agent-foundation" style="color:#8db9ff">Review the development branch on GitHub</a></p>
 </section>
 </main>
-<footer>Diamond Realty AI · Early development preview · Not connected to production controls</footer>
+<footer>Diamond Realty AI · Development preview · No production changes made</footer>
+<script>
+(() => {
+  const SUPABASE_URL = "https://jpbujomdlyoqjeledjlm.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_WeDPtZdr52Xfmp9oN6bZ4Q_44rGrV0Q";
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const byId = (id) => document.getElementById(id);
+  const loginCard = byId("loginCard");
+  const chatCard = byId("chatCard");
+  const logoutBtn = byId("logoutBtn");
+
+  function status(id, text, isError=false) {
+    const el = byId(id); el.textContent = text; el.style.color = isError ? "#ff8b8b" : "#9aabc2";
+  }
+  function showSession(session) {
+    loginCard.style.display = session ? "none" : "block";
+    chatCard.style.display = session ? "block" : "none";
+    logoutBtn.hidden = !session;
+    if (session) byId("sessionLabel").textContent = "Signed in: " + (session.user.email || "owner");
+  }
+  function addMessage(kind, text) {
+    const el = document.createElement("div");
+    el.className = "message " + kind;
+    el.textContent = text;
+    byId("messages").appendChild(el);
+    byId("messages").scrollTop = byId("messages").scrollHeight;
+  }
+
+  byId("loginBtn").addEventListener("click", async () => {
+    const email = byId("email").value.trim();
+    const password = byId("password").value;
+    if (!email || !password) return status("loginStatus", "Enter your email and password.", true);
+    byId("loginBtn").disabled = true;
+    status("loginStatus", "Signing in...");
+    const { data, error } = await client.auth.signInWithPassword({ email, password });
+    byId("loginBtn").disabled = false;
+    if (error) return status("loginStatus", error.message, true);
+    showSession(data.session);
+    status("loginStatus", "");
+  });
+
+  logoutBtn.addEventListener("click", async () => {
+    await client.auth.signOut();
+    byId("messages").replaceChildren();
+    showSession(null);
+  });
+
+  async function sendMessage() {
+    const message = byId("message").value.trim();
+    if (!message) return status("chatStatus", "Type a message first.", true);
+    const { data: sessionData } = await client.auth.getSession();
+    if (!sessionData.session) { showSession(null); return status("chatStatus", "Please sign in again.", true); }
+    byId("sendBtn").disabled = true;
+    addMessage("user", message);
+    byId("message").value = "";
+    status("chatStatus", "Thinking...");
+    const { data, error } = await client.functions.invoke("diamond-ai", { body: { message } });
+    byId("sendBtn").disabled = false;
+    if (error) {
+      const detail = data && data.error ? data.error : error.message;
+      addMessage("error", "AI backend unavailable: " + detail);
+      status("chatStatus", "Request failed.", true);
+      return;
+    }
+    if (!data || typeof data.answer !== "string") {
+      addMessage("error", "The backend returned an unexpected response.");
+      status("chatStatus", "Request failed.", true);
+      return;
+    }
+    addMessage("assistant", data.answer);
+    status("chatStatus", "");
+  }
+
+  byId("sendBtn").addEventListener("click", sendMessage);
+  byId("message").addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); sendMessage(); }
+  });
+  client.auth.getSession().then(({ data }) => showSession(data.session));
+  client.auth.onAuthStateChange((_event, session) => showSession(session));
+})();
+</script>
 </body>
 </html>
