@@ -1,0 +1,4 @@
+# Supabase project configuration.
+# JWT verification remains enabled by default for this owner-only endpoint.
+[functions.diamond-ai]
+verify_jwt = true
