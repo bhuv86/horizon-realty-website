@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diamond Realty AI — Control Centre</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#121d30;--line:#263650;--text:#edf3fb;--muted:#9aabc2;--gold:#d5a653;--green:#55c58a;--blue:#8db9ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 Inter,system-ui,Arial,sans-serif}
+header{padding:22px clamp(18px,5vw,64px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{font-weight:750;letter-spacing:.02em}.brand span{color:var(--gold)}main{max-width:1100px;margin:0 auto;padding:34px 20px 70px}
+.eyebrow{color:var(--gold);font-size:.76rem;text-transform:uppercase;letter-spacing:.15em;font-weight:700}
+h1{font-size:clamp(2rem,5vw,3.4rem);line-height:1.08;margin:10px 0}p{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:26px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px}
+.card h2{font-size:1.05rem;margin:0 0 8px}.tag{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:4px 10px;color:var(--muted);font-size:.76rem}
+.status{display:flex;align-items:center;gap:8px;color:#f4c979;font-size:.85rem}.dot{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.chat{margin-top:24px}.chatbox{background:#0d1728;border:1px dashed #43536c;border-radius:12px;padding:18px}
+input,textarea{width:100%;background:#0a1322;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:12px;font:inherit}
+textarea{min-height:92px;resize:vertical}button{margin-top:10px;background:#34435a;color:#aab8cb;border:0;border-radius:9px;padding:11px 16px;font:inherit;cursor:not-allowed}
+ul{padding-left:20px;color:var(--muted)}li{margin:7px 0}.notice{border-left:3px solid var(--gold);padding:12px 15px;background:#1b2637;border-radius:7px;color:#dce5f1}
+footer{border-top:1px solid var(--line);padding:18px;text-align:center;color:var(--muted);font-size:.8rem}
+a{color:var(--blue)}
+@media(max-width:600px){header{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header><div class="brand">DIAMOND <span>REALTY</span> · AI</div><span class="tag">Owner control centre · Preview</span></header>
+<main>
+<div class="eyebrow">Your business, one assistant</div>
+<h1>Vanakkam! Your AI control centre starts here.</h1>
+<p>Chat and voice assistant foundation for managing your real-estate website, projects, plots, enquiries and technical maintenance.</p>
+<div class="notice"><strong>Backend not connected yet.</strong> This is the safe dashboard preview. No real AI requests, code changes, customer calls or deployments are being made from this page yet.</div>
+<div class="grid">
+<section class="card"><div class="status"><span class="dot"></span> Awaiting secure backend</div><h2>AI assistant</h2><p>Will understand Tanglish and English, plan tasks and explain fixes before asking your approval.</p></section>
+<section class="card"><span class="tag">Phase 1</span><h2>Website health</h2><p>Planned: availability checks, browser errors, failed form submissions and uptime alerts.</p></section>
+<section class="card"><span class="tag">Phase 2</span><h2>GitHub developer</h2><p>Planned: inspect code, prepare changes on a development branch, run tests and show a review.</p></section>
+<section class="card"><span class="tag">Phase 3</span><h2>Business operations</h2><p>Planned: project and plot management, lead follow-up, site visits and staff access.</p></section>
+<section class="card"><span class="tag">Phase 4</span><h2>Voice control</h2><p>Planned: Tanglish voice interaction through a connected voice or telephony provider.</p></section>
+<section class="card"><span class="tag">Always owner-controlled</span><h2>Approval & recovery</h2><p>Production changes, database migrations, customer contact and destructive actions require your approval.</p></section>
+</div>
+<section class="card chat">
+<h2>Talk to your AI agent</h2>
+<p>The secure AI backend endpoint and owner authentication must be configured before enabling chat. Never place AI provider keys or GitHub tokens in this static website.</p>
+<div class="chatbox">
+<label for="message">Your command (Tanglish / English)</label>
+<textarea id="message" disabled placeholder="Example: Macha, enquiry form error check pannu..."></textarea>
+<button type="button" disabled>Chat will activate after secure backend setup</button>
+</div>
+</section>
+<section class="card">
+<h2>Development safety</h2>
+<ul>
+<li>Development work stays separate from the live main branch.</li>
+<li>AI proposes changes and test evidence before asking for approval.</li>
+<li>Keep production secrets on the server, never in browser code or GitHub commits.</li>
+<li>Backups and rollback steps are required before production releases.</li>
+</ul>
+<p>Current development branch: <code>ai-agent-foundation</code></p>
+<p><a href="https://github.com/bhuv86/horizon-realty-website/tree/ai-agent-foundation">Review the development branch on GitHub</a></p>
+</section>
+</main>
+<footer>Diamond Realty AI · Early development preview · Not connected to production controls</footer>
+</body>
+</html>
