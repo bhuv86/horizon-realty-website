@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diamond Realty AI — Local Test</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#121d30;--line:#263650;--text:#edf3fb;--muted:#9aabc2;--gold:#d5a653}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 Inter,system-ui,Arial,sans-serif}
+header{padding:18px 5vw;border-bottom:1px solid var(--line);font-weight:800;letter-spacing:.04em}header span{color:var(--gold)}
+main{max-width:850px;margin:30px auto;padding:0 18px 50px}h1{font-size:clamp(2rem,5vw,3rem);margin:8px 0}p{color:var(--muted)}
+.notice{background:#302719;border:1px solid #735b32;padding:13px 15px;border-radius:10px;color:#f4dfb9}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:18px}
+#messages{height:340px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:12px;background:#0a1322}
+.msg{white-space:pre-wrap;overflow-wrap:anywhere;padding:10px 12px;border-radius:9px;margin:8px 0}
+.user{background:#1c3552}.bot{background:#172b27;border:1px solid #315544}
+label{display:block;color:var(--muted);margin:14px 0 6px}textarea{width:100%;min-height:90px;resize:vertical;background:#0a1322;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:12px;font:inherit}
+button{margin-top:10px;background:#b98a3d;color:#101827;border:0;border-radius:9px;padding:11px 17px;font:inherit;font-weight:700;cursor:pointer}
+.small{font-size:.85rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>DIAMOND <span>REALTY</span> · LOCAL AI TEST</header>
+<main>
+<div class="small">LOCAL DEVELOPMENT PREVIEW</div>
+<h1>Vanakkam! AI chat test.</h1>
+<p>Use this page to check the chat layout and message flow on your own computer.</p>
+<div class="notice"><strong>Demo mode:</strong> This page uses sample replies only. It does not connect to OpenAI, Supabase, your website, GitHub, or customer data. No login or secrets are required.</div>
+<section class="card">
+<h2>Chat preview</h2>
+<div id="messages" aria-live="polite"><div class="msg bot">Vanakkam! Naan Diamond Realty AI demo. Tanglish or English-la message pannunga. Ithu sample mode mattum.</div></div>
+<label for="message">Your message</label>
+<textarea id="message" maxlength="4000" placeholder="Macha, website-la error vandha epdi check panradhu?"></textarea>
+<button id="send" type="button">Send message</button>
+<p class="small" id="status">Local demo ready · Press Enter to send, Shift+Enter for a new line.</p>
+</section>
+</main>
+<script>
+const input=document.getElementById('message'),messages=document.getElementById('messages'),status=document.getElementById('status');
+function add(cls,text){const el=document.createElement('div');el.className='msg '+cls;el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight}
+function reply(q){
+ const s=q.toLowerCase();
+ if(s.includes('website')||s.includes('error')||s.includes('bug')) return 'Website issue troubleshoot panna: 1) exact error message note pannunga, 2) browser Console-la red errors check pannunga, 3) Network tab-la failed request paarunga, 4) recent code change compare pannunga. Ithu demo guidance; actual repo inspect pannala.';
+ if(s.includes('lead')||s.includes('customer')) return 'Lead follow-up-ku customer name, project interest, last contact date, next action track pannunga. Customer data indha demo-kku connect pannala.';
+ if(s.includes('plot')||s.includes('project')) return 'Plot details share panna project name, plot number, sqft, price, approval status, availability verify pannanum. Indha demo-la live project data illa.';
+ if(s.includes('hello')||s.includes('hi')||s.includes('vanakkam')) return 'Vanakkam macha! Naan local demo assistant. Tanglish or English-la kelunga.';
+ return 'Ungal message receive aachu. Ithu local UI demo; real AI answer generate panna backend connect + configure pannanum. Ippo chat screen and message flow mattum test pannalaam.';
+}
+function send(){const q=input.value.trim();if(!q)return;add('user',q);input.value='';status.textContent='Demo reply generated';add('bot',reply(q))}
+document.getElementById('send').addEventListener('click',send);
+input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
+</script>
+</body>
+</html>
